@@ -1,77 +1,70 @@
 #include <common.h>
 
+#define D_WIDTH 64
+#define D_HEIGHT 32
+#define RAM_SIZE 4096
+#define FIRST_INST 0x200
+
 typedef enum {
+    IN_NONE,
     IN_00E0,
     IN_00EE,
-    IN_0nnn,
-    IN_1nnn,
-    IN_2nnn,
-    IN_3xkk,
-    IN_4xkk,
-    IN_5xy0,
-    IN_6xkk,
-    IN_7xkk,
-    IN_8xy0,
-    IN_8xy1,
-    IN_8xy2,
-    IN_8xy3,
-    IN_8xy4,
-    IN_8xy5,
-    IN_8xy6,
-    IN_8xy7,
-    IN_8xyE,
-    IN_9xy0,
-    IN_Annn,
-    IN_Bnnn,
-    IN_Cxkk,
-    IN_Dxyn,
-    IN_Ex9E,
-    IN_ExA1,
-    IN_Fx07,
-    IN_Fx0A,
-    IN_Fx15,
-    IN_Fx18,
-    IN_Fx1E,
-    IN_Fx29,
-    IN_Fx33,
-    IN_Fx55,
-    IN_Fx65
+    IN_0NNN,
+    IN_1NNN,
+    IN_2NNN,
+    IN_3XNN,
+    IN_4XNN,
+    IN_5XY0,
+    IN_6XNN,
+    IN_7XNN,
+    IN_8XY0,
+    IN_8XY1,
+    IN_8XY2,
+    IN_8XY3,
+    IN_8XY4,
+    IN_8XY5,
+    IN_8XY6,
+    IN_8XY7,
+    IN_8XYE,
+    IN_9XY0,
+    IN_ANNN,
+    IN_BNNN,
+    IN_CXNN,
+    IN_DXYN,
+    IN_EX9E,
+    IN_EXA1,
+    IN_FX07,
+    IN_FX0A,
+    IN_FX15,
+    IN_FX18,
+    IN_FX1E,
+    IN_FX29,
+    IN_FX33,
+    IN_FX55,
+    IN_FX65
 } in_type;
 
 typedef struct {
-    u8 V0;
-    u8 V1;
-    u8 V2;
-    u8 V3;
-    u8 V4;
-    u8 V5;
-    u8 V6;
-    u8 V7;
-    u8 V8;
-    u8 V9;
-    u8 VA;
-    u8 VB;
-    u8 VC;
-    u8 VD;
-    u8 VE;
-    u8 VF;
-} reg;
-
-typedef struct {
     in_type type;
+    u8 X;
+    u8 Y;
+    u8 N;
+    u8 NN;
+    u16 NNN;
 } instruction;
 
 typedef struct {
-    u8 memory[4096];
-    reg regs;
+    u8 *memory;
+    u8 display[D_WIDTH * D_HEIGHT];
+    u8 regs[16];
     u16 pc;
     u16 ir;
-    instruction cur_instruction;
+    instruction cur_inst;
     u8 delay_timer;
     u8 sound_timer;
 } chip8;
 
-u8 memory_read(u16 address);
+void init();
 void fetch();
 void execute();
 void run();

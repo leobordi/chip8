@@ -2,32 +2,76 @@
 
 chip8 ctx;
 
-u8 memory_read(u16 address) {
-    return ctx.memory[address];
+void init() {
+    ctx.memory = malloc(RAM_SIZE);
+    ctx.pc = FIRST_INST;
 }
 
 void fetch() {
-    // chip8 usa big endian
     u8 hi = ctx.memory[ctx.pc];
     u8 lo = ctx.memory[ctx.pc++];
 
     u8 opcode = (hi & 0xF0) >> 4;
-    u8 X = hi & 0xF;
-    u8 Y = (lo & 0x0F) >> 4;
-    u8 N = lo & 0x0F;
-    u8 NN = lo;
-    u16 NNN = (X << 8) | NN;
+    ctx.cur_inst.X = hi & 0xF;
+    ctx.cur_inst.Y = (lo & 0x0F) >> 4;
+    ctx.cur_inst.N = lo & 0x0F;
+    ctx.cur_inst.NN = lo;
+    ctx.cur_inst.NNN = (ctx.cur_inst.X << 8) | ctx.cur_inst.NN;
     
     switch (opcode) {
         case 0x0:
-            if (!X && !N) {
-
-            } else if (!X) {
-
+            if (ctx.cur_inst.Y == 0xE && ctx.cur_inst.N == 0xE) {
+                ctx.cur_inst.type = IN_00EE;
+            } else if (ctx.cur_inst.Y == 0xE && ctx.cur_inst.N == 0x0) {
+                ctx.cur_inst.type = IN_00E0;
             } else {
-
+                ctx.cur_inst.type = IN_NONE;
             }
 
+            break;
+
+        case 0x1: ctx.cur_inst.type = IN_1NNN; break;
+
+        case 0x2: ctx.cur_inst.type = IN_2NNN; break;
+
+        case 0x6: ctx.cur_inst.type = IN_6XNN; break;
+    
+        case 0x7: ctx.cur_inst.type = IN_7XNN; break;
+
+        case 0xA: ctx.cur_inst.type = IN_ANNN; break;
+
+        case 0xD: ctx.cur_inst.type = IN_DXYN; break;
+    }
+}
+
+void execute() {
+    switch (ctx.cur_inst.type) {
+        case IN_00E0:
+            for (int i = 0; i < D_WIDTH * D_HEIGHT; i++) {
+                ctx.display[i] = 0x00;
+            }
+            break;
+
+        case IN_1NNN: 
+            ctx.pc = ctx.cur_inst.NNN;
+            break;
+
+        case IN_6XNN: 
+            ctx.regs[ctx.cur_inst.X] = ctx.cur_inst.NN;
+            break;
+
+        case IN_7XNN: 
+            ctx.regs[ctx.cur_inst.X] += ctx.cur_inst.NN;
+            break;
+    
+        case IN_ANNN: 
+            ctx.ir = ctx.cur_inst.NNN;
+            break;
+
+        case IN_DXYN: {
+                u8 x = ctx.regs[ctx.cur_inst.X];
+                u8 y = ctx.regs[ctx.cur_inst.Y];
+            }
             break;
     }
 }
