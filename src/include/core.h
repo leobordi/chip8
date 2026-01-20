@@ -55,7 +55,7 @@ typedef struct {
 
 typedef struct {
     u8 *memory;
-    u8 display[D_WIDTH * D_HEIGHT];
+    u8 display[D_WIDTH][D_HEIGHT];
     u8 regs[16];
     u16 pc;
     u16 ir;

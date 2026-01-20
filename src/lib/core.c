@@ -47,8 +47,10 @@ void fetch() {
 void execute() {
     switch (ctx.cur_inst.type) {
         case IN_00E0:
-            for (int i = 0; i < D_WIDTH * D_HEIGHT; i++) {
-                ctx.display[i] = 0x00;
+            for (int i = 0; i < D_WIDTH; i++) {
+                for (int k = 0; k < D_HEIGHT; k++) {
+                    ctx.display[i][k] = 0x00;
+                }
             }
             break;
 
