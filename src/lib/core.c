@@ -73,6 +73,17 @@ void execute() {
         case IN_DXYN: {
                 u8 x = ctx.regs[ctx.cur_inst.X];
                 u8 y = ctx.regs[ctx.cur_inst.Y];
+
+                u16 start = ctx.ir;
+                for (; y < ctx.cur_inst.N; y++) {
+                    u8 row = ctx.memory[start];
+
+                    for (int i = 8; i > 0; i--) {
+                        (row >> i) & 0x1
+                    }
+
+                    start++;
+                }
             }
             break;
     }
