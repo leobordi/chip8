@@ -2,19 +2,39 @@
 
 chip8 ctx;
 
-void init() {
-    ctx.memory = malloc(RAM_SIZE);
+void chip8_init() {
     ctx.pc = FIRST_INST;
 }
 
-void fetch() {
-    u8 hi = ctx.memory[ctx.pc];
-    u8 lo = ctx.memory[ctx.pc++];
+void chip8_step() {
+    fetch();
+    execute();
+}
 
-    u8 opcode = (hi & 0xF0) >> 4;
+bool chip8_load_rom(char *path) {
+    FILE *f = fopen(path, "rb");
+    if (f == NULL) return false;
+
+    fseek(f, 0, SEEK_END);
+    long size = ftell(f);
+    rewind(f);
+    
+    fread(&ctx.memory[FIRST_INST], 1, size, f);
+    
+    fclose(f);
+    return true;
+}
+
+static void fetch() {
+    u8 hi = ctx.memory[ctx.pc];
+    ctx.pc++;
+    u8 lo = ctx.memory[ctx.pc];
+    ctx.pc++;
+
+    u8 opcode = (hi >> 4) & 0xF;
     ctx.cur_inst.X = hi & 0xF;
-    ctx.cur_inst.Y = (lo & 0x0F) >> 4;
-    ctx.cur_inst.N = lo & 0x0F;
+    ctx.cur_inst.Y = (lo >> 4) & 0xF;
+    ctx.cur_inst.N = lo & 0xF;
     ctx.cur_inst.NN = lo;
     ctx.cur_inst.NNN = (ctx.cur_inst.X << 8) | ctx.cur_inst.NN;
     
@@ -44,12 +64,12 @@ void fetch() {
     }
 }
 
-void execute() {
+static void execute() {
     switch (ctx.cur_inst.type) {
         case IN_00E0:
             for (int i = 0; i < D_WIDTH; i++) {
                 for (int k = 0; k < D_HEIGHT; k++) {
-                    ctx.display[i][k] = 0x00;
+                    ctx.display[i][k] = 0;
                 }
             }
             break;
@@ -71,15 +91,25 @@ void execute() {
             break;
 
         case IN_DXYN: {
-                u8 x = ctx.regs[ctx.cur_inst.X];
-                u8 y = ctx.regs[ctx.cur_inst.Y];
-
+                ctx.regs[0xF] = 0;
                 u16 start = ctx.ir;
-                for (; y < ctx.cur_inst.N; y++) {
-                    u8 row = ctx.memory[start];
 
-                    for (int i = 8; i > 0; i--) {
-                        (row >> i) & 0x1
+                for (u8 y = ctx.regs[ctx.cur_inst.Y] % 32; y < ctx.cur_inst.N; y++) {
+                    u8 row = ctx.memory[start];
+                    u8 x = ctx.regs[ctx.cur_inst.X] % 64;
+
+                    for (int i = 7; i >= 0; i--) {
+                        if (row >= D_WIDTH) break;
+
+                        u8 pixel = (row >> i) & 0x1;
+                        if (ctx.display[x][y] && pixel) {
+                            ctx.display[x][y] = 0;
+                            ctx.regs[0xF] = 1;
+                        } else {
+                            ctx.display[x][y] = pixel;
+                        }
+                        
+                        x++;
                     }
 
                     start++;

@@ -3,7 +3,7 @@
 #define D_WIDTH 64
 #define D_HEIGHT 32
 #define RAM_SIZE 4096
-#define FIRST_INST 0x200
+#define FIRST_INST 0x201
 
 typedef enum {
     IN_NONE,
@@ -54,7 +54,7 @@ typedef struct {
 } instruction;
 
 typedef struct {
-    u8 *memory;
+    u8 memory[RAM_SIZE];
     u8 display[D_WIDTH][D_HEIGHT];
     u8 regs[16];
     u16 pc;
@@ -64,7 +64,8 @@ typedef struct {
     u8 sound_timer;
 } chip8;
 
-void init();
-void fetch();
-void execute();
-void run();
+void chip8_init();
+void chip8_step();
+bool chip8_load_rom(char *path);
+static void fetch();
+static void execute();
