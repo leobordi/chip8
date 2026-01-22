@@ -51,16 +51,58 @@ static void fetch() {
             break;
 
         case 0x1: ctx.cur_inst.type = IN_1NNN; break;
-
         case 0x2: ctx.cur_inst.type = IN_2NNN; break;
-
+        case 0x3: ctx.cur_inst.type = IN_3XNN; break;
+        case 0x4: ctx.cur_inst.type = IN_4XNN; break;
+        case 0x5: ctx.cur_inst.type = IN_5XY0; break;
         case 0x6: ctx.cur_inst.type = IN_6XNN; break;
-    
         case 0x7: ctx.cur_inst.type = IN_7XNN; break;
 
-        case 0xA: ctx.cur_inst.type = IN_ANNN; break;
+        case 0x8: 
+            switch (ctx.cur_inst.N) {
+                case 0x0: ctx.cur_inst.type = IN_8XY0; break;
+                case 0x1: ctx.cur_inst.type = IN_8XY1; break;
+                case 0x2: ctx.cur_inst.type = IN_8XY2; break;
+                case 0x3: ctx.cur_inst.type = IN_8XY3; break;
+                case 0x4: ctx.cur_inst.type = IN_8XY4; break;
+                case 0x5: ctx.cur_inst.type = IN_8XY5; break;
+                case 0x6: ctx.cur_inst.type = IN_8XY6; break;
+                case 0x7: ctx.cur_inst.type = IN_8XY7; break;
+                case 0xE: ctx.cur_inst.type = IN_8XYE; break;
+                default: ctx.cur_inst.type = IN_NONE; break;
+            }
+            break;
 
+        case 0x9: ctx.cur_inst.type = IN_9XY0; break;
+        case 0xA: ctx.cur_inst.type = IN_ANNN; break;
+        case 0xB: ctx.cur_inst.type = IN_BNNN; break;
+        case 0xC: ctx.cur_inst.type = IN_CXNN; break;
         case 0xD: ctx.cur_inst.type = IN_DXYN; break;
+
+        case 0xE: 
+            switch (ctx.cur_inst.NN) {
+                case 0x9E: ctx.cur_inst.type = IN_EX9E; break;
+                case 0xA1: ctx.cur_inst.type = IN_EXA1; break;
+                default: ctx.cur_inst.type = IN_NONE; break;
+            }
+            break;
+
+        case 0xF: 
+            switch (ctx.cur_inst.NN) {
+                case 0x07: ctx.cur_inst.type = IN_FX07; break;
+                case 0x0A: ctx.cur_inst.type = IN_FX0A; break;
+                case 0x15: ctx.cur_inst.type = IN_FX15; break;
+                case 0x18: ctx.cur_inst.type = IN_FX18; break;
+                case 0x1E: ctx.cur_inst.type = IN_FX1E; break;
+                case 0x29: ctx.cur_inst.type = IN_FX29; break;
+                case 0x33: ctx.cur_inst.type = IN_FX33; break;
+                case 0x55: ctx.cur_inst.type = IN_FX55; break;
+                case 0x65: ctx.cur_inst.type = IN_FX65; break;
+                default: ctx.cur_inst.type = IN_NONE; break;
+            }
+            break;
+            
+        default: ctx.cur_inst.type = IN_NONE; break;
     }
 }
 
