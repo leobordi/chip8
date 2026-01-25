@@ -14,9 +14,7 @@ int main(int argc, char **argv) {
         return -2;
     }
     
-    while (true) {
-        chip8_step();
-    }
+    chip8_run();
 
     return 0;
 }

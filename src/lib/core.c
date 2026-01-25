@@ -1,14 +1,25 @@
 #include <core.h>
+#include <display.h>
 
 chip8 ctx;
 
 void chip8_init() {
+    load_font();
+    display_init(&ctx.disp);
     ctx.pc = FIRST_INST;
 }
 
-void chip8_step() {
-    fetch();
-    execute();
+void chip8_run() {
+    while (true) {
+        display_update(&ctx.disp);
+        if (!ctx.disp.running) {
+            display_close(&ctx.disp);
+            break;
+        }
+
+        fetch();
+        execute();
+    }
 }
 
 bool chip8_load_rom(char *path) {
@@ -111,7 +122,7 @@ static void execute() {
         case IN_00E0:
             for (int i = 0; i < D_WIDTH; i++) {
                 for (int k = 0; k < D_HEIGHT; k++) {
-                    ctx.display[i][k] = 0;
+                    ctx.video_buffer[i][k] = 0;
                 }
             }
             break;
@@ -144,11 +155,11 @@ static void execute() {
                         if (row >= D_WIDTH) break;
 
                         u8 pixel = (row >> i) & 0x1;
-                        if (ctx.display[x][y] && pixel) {
-                            ctx.display[x][y] = 0;
+                        if (ctx.video_buffer[x][y] && pixel) {
+                            ctx.video_buffer[x][y] = 0;
                             ctx.regs[0xF] = 1;
                         } else {
-                            ctx.display[x][y] = pixel;
+                            ctx.video_buffer[x][y] = pixel;
                         }
                         
                         x++;
@@ -158,5 +169,30 @@ static void execute() {
                 }
             }
             break;
+    }
+}
+
+static void load_font() {
+    u8 font[80] = {
+        0xF0, 0x90, 0x90, 0x90, 0xF0,
+        0x20, 0x60, 0x20, 0x20, 0x70,
+        0xF0, 0x10, 0xF0, 0x80, 0xF0,
+        0xF0, 0x10, 0xF0, 0x10, 0xF0,
+        0x90, 0x90, 0xF0, 0x10, 0x10,
+        0xF0, 0x80, 0xF0, 0x10, 0xF0,
+        0xF0, 0x80, 0xF0, 0x90, 0xF0,
+        0xF0, 0x10, 0x20, 0x40, 0x40,
+        0xF0, 0x90, 0xF0, 0x90, 0xF0,
+        0xF0, 0x90, 0xF0, 0x10, 0xF0,
+        0xF0, 0x90, 0xF0, 0x90, 0x90,
+        0xE0, 0x90, 0xE0, 0x90, 0xE0,
+        0xF0, 0x80, 0x80, 0x80, 0xF0,
+        0xE0, 0x90, 0x90, 0x90, 0xE0,
+        0xF0, 0x80, 0xF0, 0x80, 0xF0,
+        0xF0, 0x80, 0xF0, 0x80, 0x80
+    };
+
+    for (int i = 0x0; i < sizeof(font); i++) {
+        ctx.memory[i + 0x50] = font[i];
     }
 }

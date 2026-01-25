@@ -1,4 +1,7 @@
+#pragma once
+
 #include <common.h>
+#include <display.h>
 
 #define D_WIDTH 64
 #define D_HEIGHT 32
@@ -54,8 +57,9 @@ typedef struct {
 } instruction;
 
 typedef struct {
+    display disp;
     u8 memory[RAM_SIZE];
-    u8 display[D_WIDTH][D_HEIGHT];
+    u8 video_buffer[D_WIDTH][D_HEIGHT];
     u8 regs[16];
     u16 pc;
     u16 ir;
@@ -65,7 +69,8 @@ typedef struct {
 } chip8;
 
 void chip8_init();
-void chip8_step();
+void chip8_run();
 bool chip8_load_rom(char *path);
 static void fetch();
 static void execute();
+static void load_font();
