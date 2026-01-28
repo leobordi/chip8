@@ -120,10 +120,8 @@ static void fetch() {
 static void execute() {
     switch (ctx.cur_inst.type) {
         case IN_00E0:
-            for (int i = 0; i < D_WIDTH; i++) {
-                for (int k = 0; k < D_HEIGHT; k++) {
-                    ctx.video_buffer[i][k] = 0;
-                }
+            for (int i = 0; i < D_WIDTH * D_HEIGHT; i++) {
+                ctx.disp.video_buffer[i] = 0;
             }
             break;
 
@@ -145,28 +143,30 @@ static void execute() {
 
         case IN_DXYN: {
                 ctx.regs[0xF] = 0;
-                u16 start = ctx.ir;
+                u8 start_x = ctx.regs[ctx.cur_inst.X] % D_WIDTH;
+                u8 start_y = ctx.regs[ctx.cur_inst.Y] % D_HEIGHT;
 
-                for (u8 y = ctx.regs[ctx.cur_inst.Y] % 32; y < ctx.cur_inst.N; y++) {
-                    u8 row = ctx.memory[start];
-                    u8 x = ctx.regs[ctx.cur_inst.X] % 64;
+                for (u8 row_offset = 0; row_offset < ctx.cur_inst.N; row_offset++) {
+                    int y = start_y + row_offset;
+                    if (y >= D_HEIGHT) break; 
 
-                    for (int i = 7; i >= 0; i--) {
-                        if (row >= D_WIDTH) break;
+                    u8 sprite_byte = ctx.memory[ctx.ir + row_offset];
 
-                        u8 pixel = (row >> i) & 0x1;
-                        if (ctx.video_buffer[x][y] && pixel) {
-                            ctx.video_buffer[x][y] = 0;
-                            ctx.regs[0xF] = 1;
-                        } else {
-                            ctx.video_buffer[x][y] = pixel;
-                        }
-                        
-                        x++;
+                    for (u8 col_offset = 0; col_offset < 8; col_offset++) {
+                        int x = start_x + col_offset;
+                        if (x >= D_WIDTH) break; 
+
+                        u8 pixel = (sprite_byte >> (7 - col_offset)) & 0x1;
+                        if (!pixel) continue;
+
+                        int index = x + (y * D_WIDTH);
+
+                        if (ctx.disp.video_buffer[index]) ctx.regs[0xF] = 1;
+                        ctx.disp.video_buffer[index] ^= 1;
                     }
-
-                    start++;
                 }
+
+                display_draw(&ctx.disp);
             }
             break;
     }

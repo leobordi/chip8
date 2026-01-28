@@ -3,8 +3,6 @@
 #include <common.h>
 #include <display.h>
 
-#define D_WIDTH 64
-#define D_HEIGHT 32
 #define RAM_SIZE 4096
 #define FIRST_INST 0x201
 
@@ -59,7 +57,6 @@ typedef struct {
 typedef struct {
     display disp;
     u8 memory[RAM_SIZE];
-    u8 video_buffer[D_WIDTH][D_HEIGHT];
     u8 regs[16];
     u16 pc;
     u16 ir;
