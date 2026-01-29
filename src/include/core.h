@@ -4,7 +4,7 @@
 #include <display.h>
 
 #define RAM_SIZE 4096
-#define FIRST_INST 0x201
+#define FIRST_INST 0x200
 
 typedef enum {
     IN_NONE,

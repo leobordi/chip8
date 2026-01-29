@@ -164,6 +164,8 @@ static void execute() {
                         if (ctx.disp.video_buffer[index]) ctx.regs[0xF] = 1;
                         ctx.disp.video_buffer[index] ^= 1;
                     }
+
+                    display_draw(&ctx.disp);
                 }
 
                 display_draw(&ctx.disp);

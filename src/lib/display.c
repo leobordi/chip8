@@ -10,8 +10,8 @@ void display_init(display *dsp) {
         "Chip 8",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        800,
-        600,
+        1200,
+        720,
         SDL_WINDOW_SHOWN
     );
 
