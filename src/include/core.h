@@ -57,10 +57,12 @@ typedef struct {
 typedef struct {
     display disp;
     u8 memory[RAM_SIZE];
+    u16 stack[16];
     u8 regs[16];
     u16 pc;
     u16 ir;
     instruction cur_inst;
+    u8 sp;
     u8 delay_timer;
     u8 sound_timer;
 } chip8;

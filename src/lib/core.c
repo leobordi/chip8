@@ -7,6 +7,7 @@ void chip8_init() {
     load_font();
     display_init(&ctx.disp);
     ctx.pc = FIRST_INST;
+    ctx.sp = 0x0;
 }
 
 void chip8_run() {
@@ -125,8 +126,31 @@ static void execute() {
             }
             break;
 
+        case IN_00EE:
+            ctx.sp--;
+            ctx.pc = ctx.stack[ctx.sp];
+            break;
+
         case IN_1NNN: 
             ctx.pc = ctx.cur_inst.NNN;
+            break;
+
+        case IN_2NNN:
+            ctx.stack[ctx.sp] = ctx.pc;
+            ctx.sp++;
+            ctx.pc = ctx.cur_inst.NNN;
+            break;
+
+        case IN_3XNN:
+            if (ctx.regs[ctx.cur_inst.X] == ctx.cur_inst.NN) ctx.pc += 2;
+            break;
+
+        case IN_4XNN:
+            if (ctx.regs[ctx.cur_inst.X] != ctx.cur_inst.NN) ctx.pc += 2;
+            break;
+
+        case IN_5XY0:
+            if (ctx.regs[ctx.cur_inst.X] == ctx.regs[ctx.cur_inst.Y]) ctx.pc += 2;
             break;
 
         case IN_6XNN: 
@@ -135,6 +159,10 @@ static void execute() {
 
         case IN_7XNN: 
             ctx.regs[ctx.cur_inst.X] += ctx.cur_inst.NN;
+            break;
+
+        case IN_9XY0:
+            if (ctx.regs[ctx.cur_inst.X] != ctx.regs[ctx.cur_inst.Y]) ctx.pc += 2;
             break;
     
         case IN_ANNN: 
@@ -164,12 +192,14 @@ static void execute() {
                         if (ctx.disp.video_buffer[index]) ctx.regs[0xF] = 1;
                         ctx.disp.video_buffer[index] ^= 1;
                     }
-
-                    display_draw(&ctx.disp);
                 }
 
                 display_draw(&ctx.disp);
             }
+            break;
+        
+        default:
+            printf("Istruzione %d non implementata\n", ctx.cur_inst.type);
             break;
     }
 }
