@@ -161,6 +161,50 @@ static void execute() {
             ctx.regs[ctx.cur_inst.X] += ctx.cur_inst.NN;
             break;
 
+        case IN_8XY0:
+            ctx.regs[ctx.cur_inst.X] = ctx.regs[ctx.cur_inst.Y];
+            break;
+
+        case IN_8XY1:
+            ctx.regs[ctx.cur_inst.X] |= ctx.regs[ctx.cur_inst.Y];
+            break;
+
+        case IN_8XY2:
+            ctx.regs[ctx.cur_inst.X] &= ctx.regs[ctx.cur_inst.Y];
+            break;
+
+        case IN_8XY3:
+            ctx.regs[ctx.cur_inst.X] ^= ctx.regs[ctx.cur_inst.Y];
+            break;
+
+        case IN_8XY4: {
+                u16 result = ctx.regs[ctx.cur_inst.X] + ctx.regs[ctx.cur_inst.Y];
+                if (result > 0xFF) {
+                    ctx.regs[0xF] = 1;
+                    ctx.regs[ctx.cur_inst.X] = 0xFF;
+                } else {
+                    ctx.regs[0xF] = 0;
+                    ctx.regs[ctx.cur_inst.X] =  result & 0xFF;
+                }
+            }
+            break;
+
+        case IN_8XY5:
+            printf("Istruzione IN_8XY5 non implementata\n");
+            break;
+
+        case IN_8XY6:
+            printf("Istruzione IN_8XY6 non implementata\n");
+            break;
+
+        case IN_8XY7:
+            printf("Istruzione IN_8XY7 non implementata\n");
+            break;
+
+        case IN_8XYE:
+            printf("Istruzione IN_8XYE non implementata\n");
+            break;
+
         case IN_9XY0:
             if (ctx.regs[ctx.cur_inst.X] != ctx.regs[ctx.cur_inst.Y]) ctx.pc += 2;
             break;
@@ -198,8 +242,52 @@ static void execute() {
             }
             break;
         
+        case IN_EX9E:
+            printf("Istruzione IN_EX9E non implementata\n");
+            break;
+        
+        case IN_EXA1:
+            printf("Istruzione IN_EXA1 non implementata\n");
+            break;
+        
+        case IN_FX07:
+            printf("Istruzione IN_FX07 non implementata\n");
+            break;
+        
+        case IN_FX0A:
+            printf("Istruzione IN_FX0A non implementata\n");
+            break;
+        
+        case IN_FX15:
+            printf("Istruzione IN_FX15 non implementata\n");
+            break;
+        
+        case IN_FX18:
+            printf("Istruzione IN_FX18 non implementata\n");
+            break;
+        
+        case IN_FX1E:
+            printf("Istruzione IN_FX1E non implementata\n");
+            break;
+        
+        case IN_FX29:
+            printf("Istruzione IN_FX29 non implementata\n");
+            break;
+        
+        case IN_FX33:
+            printf("Istruzione IN_FX33 non implementata\n");
+            break;
+        
+        case IN_FX55:
+            printf("Istruzione IN_FX55 non implementata\n");
+            break;
+        
+        case IN_FX65:
+            printf("Istruzione IN_FX65 non implementata\n");
+            break;
+
         default:
-            printf("Istruzione %d non implementata\n", ctx.cur_inst.type);
+            printf("Istruzione  non implementata\n");
             break;
     }
 }
