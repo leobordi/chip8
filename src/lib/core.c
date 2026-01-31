@@ -189,20 +189,34 @@ static void execute() {
             }
             break;
 
-        case IN_8XY5:
-            printf("Istruzione IN_8XY5 non implementata\n");
+        case IN_8XY5: {
+                u8 x = ctx.cur_inst.X;
+                u8 y = ctx.cur_inst.Y;
+                u8 flag = ctx.regs[x] >= ctx.regs[y] ? 1 : 0;
+
+                ctx.regs[x] -= ctx.regs[y];
+                ctx.regs[0xF] = flag;
+            }
             break;
 
         case IN_8XY6:
-            printf("Istruzione IN_8XY6 non implementata\n");
+            ctx.regs[ctx.cur_inst.X] = ctx.regs[ctx.cur_inst.Y] >> 1;
+            ctx.regs[0xF] = ctx.regs[ctx.cur_inst.Y] & 0x1;
             break;
 
-        case IN_8XY7:
-            printf("Istruzione IN_8XY7 non implementata\n");
+        case IN_8XY7: {
+                u8 x = ctx.cur_inst.X;
+                u8 y = ctx.cur_inst.Y;
+                u8 flag = ctx.regs[y] >= ctx.regs[x] ? 1 : 0;
+
+                ctx.regs[x] = ctx.regs[y] - ctx.regs[x];
+                ctx.regs[0xF] = flag;
+            }
             break;
 
         case IN_8XYE:
-            printf("Istruzione IN_8XYE non implementata\n");
+            ctx.regs[ctx.cur_inst.X] = ctx.regs[ctx.cur_inst.Y] << 1;
+            ctx.regs[0xF] = ctx.regs[ctx.cur_inst.Y] & 0x80;
             break;
 
         case IN_9XY0:
@@ -251,7 +265,7 @@ static void execute() {
             break;
         
         case IN_FX07:
-            printf("Istruzione IN_FX07 non implementata\n");
+            ctx.regs[ctx.cur_inst.X] = ctx.delay_timer;
             break;
         
         case IN_FX0A:
@@ -259,15 +273,15 @@ static void execute() {
             break;
         
         case IN_FX15:
-            printf("Istruzione IN_FX15 non implementata\n");
+            ctx.delay_timer = ctx.regs[ctx.cur_inst.X];
             break;
         
         case IN_FX18:
-            printf("Istruzione IN_FX18 non implementata\n");
+            ctx.sound_timer = ctx.regs[ctx.cur_inst.X];
             break;
         
         case IN_FX1E:
-            printf("Istruzione IN_FX1E non implementata\n");
+            ctx.ir += ctx.regs[ctx.cur_inst.X];
             break;
         
         case IN_FX29:
