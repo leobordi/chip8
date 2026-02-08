@@ -12,7 +12,10 @@ void chip8_init() {
 
 void chip8_run() {
     while (true) {
-        display_update(&ctx.disp);
+        keyboard_clear();
+        
+        display_update(&ctx.disp, ctx.keyboard);
+        
         if (!ctx.disp.running) {
             display_close(&ctx.disp);
             break;
@@ -257,11 +260,11 @@ static void execute() {
             break;
         
         case IN_EX9E:
-            printf("Istruzione IN_EX9E non implementata\n");
+            if (ctx.keyboard[ctx.regs[ctx.cur_inst.X]]) ctx.pc += 2;
             break;
         
         case IN_EXA1:
-            printf("Istruzione IN_EXA1 non implementata\n");
+            if (!ctx.keyboard[ctx.regs[ctx.cur_inst.X]]) ctx.pc += 2;
             break;
         
         case IN_FX07:
@@ -269,7 +272,9 @@ static void execute() {
             break;
         
         case IN_FX0A:
-            printf("Istruzione IN_FX0A non implementata\n");
+            u8 key_pressed = get_key_pressed();
+            if (key_pressed < 0x1F) ctx.regs[ctx.cur_inst.X] = key_pressed;
+            else ctx.pc -= 1;
             break;
         
         case IN_FX15:
@@ -329,4 +334,17 @@ static void load_font() {
     for (int i = 0x0; i < sizeof(font); i++) {
         ctx.memory[i + 0x50] = font[i];
     }
+}
+
+static void keyboard_clear() {
+    for (int i = 0; i < 16; i++) {
+        ctx.keyboard[i] = 0;
+    }
+}
+
+static u8 get_key_pressed() {
+    for (u8 i = 0x0; i <= 0xF; i++) {
+        if (ctx.keyboard[i]) return i;
+    }
+    return 0x1F;
 }

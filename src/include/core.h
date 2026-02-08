@@ -59,6 +59,7 @@ typedef struct {
     u8 memory[RAM_SIZE];
     u16 stack[16];
     u8 regs[16];
+    u8 keyboard[16];
     u16 pc;
     u16 ir;
     instruction cur_inst;
@@ -73,3 +74,5 @@ bool chip8_load_rom(char *path);
 static void fetch();
 static void execute();
 static void load_font();
+static void keyboard_clear();
+static u8 get_key_pressed();

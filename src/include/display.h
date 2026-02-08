@@ -15,6 +15,7 @@ typedef struct {
 } display;
 
 void display_init(display *dsp);
-void display_update(display *dsp);
+void display_update(display *dsp, u8 *keyboard);
 void display_draw(display *dsp);
 void display_close(display *dsp);
+static u8 get_key(SDL_Scancode scancode);
