@@ -1,7 +1,7 @@
 #include <display.h>
 
 void display_init(display *dsp) {
-    if (SDL_Init(SDL_INIT_VIDEO)) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
         printf("Errore di inizializzazione: %s\n", SDL_GetError());
         exit(-1);
     }

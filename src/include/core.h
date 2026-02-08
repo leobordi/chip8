@@ -2,6 +2,7 @@
 
 #include <common.h>
 #include <display.h>
+#include <audio.h>
 
 #define RAM_SIZE 4096
 #define FIRST_INST 0x200
@@ -56,14 +57,19 @@ typedef struct {
 
 typedef struct {
     display disp;
+    audio audio;
+    
     u8 memory[RAM_SIZE];
     u16 stack[16];
     u8 regs[16];
+
     u8 keyboard[16];
+    instruction cur_inst;
+
     u16 pc;
     u16 ir;
-    instruction cur_inst;
     u8 sp;
+
     u8 delay_timer;
     u8 sound_timer;
 } chip8;
@@ -74,5 +80,7 @@ bool chip8_load_rom(char *path);
 static void fetch();
 static void execute();
 static void load_font();
+static void update_timers();
+static u16 get_font_address(u8 font);
 static void keyboard_clear();
 static u8 get_key_pressed();

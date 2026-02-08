@@ -1,13 +1,20 @@
 #include <core.h>
-#include <display.h>
 
 chip8 ctx;
+u32 last_timer_update;
 
 void chip8_init() {
     load_font();
     display_init(&ctx.disp);
+    audio_init(&ctx.audio);
+    
     ctx.pc = FIRST_INST;
     ctx.sp = 0x0;
+
+    ctx.delay_timer = 0;
+    ctx.sound_timer = 0;
+    last_timer_update = SDL_GetTicks();
+    ctx.audio.playing = false;
 }
 
 void chip8_run() {
@@ -18,11 +25,19 @@ void chip8_run() {
         
         if (!ctx.disp.running) {
             display_close(&ctx.disp);
+            audio_close(&ctx.audio);
             break;
         }
 
         fetch();
         execute();
+
+        update_timers();
+        if (ctx.sound_timer > 0 && !ctx.audio.playing) {
+            play_audio(&ctx.audio);
+        } else if (ctx.sound_timer == 0 && ctx.audio.playing) {
+            stop_audio(&ctx.audio);
+        }
     }
 }
 
@@ -289,20 +304,32 @@ static void execute() {
             ctx.ir += ctx.regs[ctx.cur_inst.X];
             break;
         
-        case IN_FX29:
-            printf("Istruzione IN_FX29 non implementata\n");
+        case IN_FX29: {
+                u8 font = (ctx.regs[ctx.cur_inst.X] >> 4) & 0xF;
+                ctx.ir = get_font_address(font);
+            }
             break;
         
         case IN_FX33:
-            printf("Istruzione IN_FX33 non implementata\n");
+            ctx.memory[ctx.ir + 2] = (ctx.regs[ctx.cur_inst.X] / 1) % 10;
+            ctx.memory[ctx.ir + 1] = (ctx.regs[ctx.cur_inst.X] / 10) % 10;
+            ctx.memory[ctx.ir] = (ctx.regs[ctx.cur_inst.X] / 100) % 10;
             break;
         
-        case IN_FX55:
-            printf("Istruzione IN_FX55 non implementata\n");
+        case IN_FX55: 
+            for (u8 i = 0; i <= ctx.cur_inst.X; i++) {
+                ctx.memory[ctx.ir + i] = ctx.regs[i];
+                /**
+                 * se la rom caricata è degli anni 70, 80 allora l'index register và
+                 * incrementato: ctx.memory[ctx.ir++] = ctx.regs[i];
+                 */
+            }
             break;
         
         case IN_FX65:
-            printf("Istruzione IN_FX65 non implementata\n");
+            for (u8 i = 0; i <= ctx.cur_inst.X; i++) {
+                ctx.regs[i] = ctx.memory[ctx.ir + i];
+            }
             break;
 
         default:
@@ -336,6 +363,13 @@ static void load_font() {
     }
 }
 
+static u16 get_font_address(u8 font) {
+    for (u16 i = 0x0050; i < 0x00A0; i++) {
+        if (ctx.memory[i] = font) return i;
+    }
+    return 0x0000;
+}
+
 static void keyboard_clear() {
     for (int i = 0; i < 16; i++) {
         ctx.keyboard[i] = 0;
@@ -347,4 +381,21 @@ static u8 get_key_pressed() {
         if (ctx.keyboard[i]) return i;
     }
     return 0x1F;
+}
+
+void update_timers() {
+    u32 current_time = SDL_GetTicks();
+    u32 elapsed_ms = current_time - last_timer_update;
+
+    // 60 Hz vuol dire ogni 16,6667... ms (17 ms) 
+    if (elapsed_ms >= 17) {
+        u32 ticks = elapsed_ms / 17;
+        
+        if (ctx.delay_timer > 0) 
+            (ctx.delay_timer > ticks) ? ctx.delay_timer - ticks : 0;
+        if (ctx.sound_timer > 0) 
+            (ctx.sound_timer > ticks) ? ctx.sound_timer - ticks : 0;
+
+        last_timer_update = current_time;
+    }
 }
