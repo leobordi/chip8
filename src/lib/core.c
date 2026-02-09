@@ -197,12 +197,12 @@ static void execute() {
 
         case IN_8XY4: {
                 u16 result = ctx.regs[ctx.cur_inst.X] + ctx.regs[ctx.cur_inst.Y];
+                ctx.regs[ctx.cur_inst.X] = result & 0xFF;
+                
                 if (result > 0xFF) {
                     ctx.regs[0xF] = 1;
-                    ctx.regs[ctx.cur_inst.X] = 0xFF;
                 } else {
                     ctx.regs[0xF] = 0;
-                    ctx.regs[ctx.cur_inst.X] =  result & 0xFF;
                 }
             }
             break;
@@ -217,9 +217,11 @@ static void execute() {
             }
             break;
 
-        case IN_8XY6:
-            ctx.regs[ctx.cur_inst.X] = ctx.regs[ctx.cur_inst.Y] >> 1;
-            ctx.regs[0xF] = ctx.regs[ctx.cur_inst.Y] & 0x1;
+        case IN_8XY6: {
+                u8 vy = ctx.regs[ctx.cur_inst.Y];
+                ctx.regs[ctx.cur_inst.X] = vy >> 1;
+                ctx.regs[0xF] = vy & 0x1;
+            }
             break;
 
         case IN_8XY7: {
@@ -232,9 +234,11 @@ static void execute() {
             }
             break;
 
-        case IN_8XYE:
-            ctx.regs[ctx.cur_inst.X] = ctx.regs[ctx.cur_inst.Y] << 1;
-            ctx.regs[0xF] = ctx.regs[ctx.cur_inst.Y] & 0x80;
+        case IN_8XYE: {
+                u8 vy = ctx.regs[ctx.cur_inst.Y];
+                ctx.regs[ctx.cur_inst.X] = vy << 1;
+                ctx.regs[0xF] = (vy & 0x80) >> 7;
+            }
             break;
 
         case IN_9XY0:
