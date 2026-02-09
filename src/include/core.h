@@ -82,5 +82,4 @@ static void execute();
 static void load_font();
 static void update_timers();
 static u16 get_font_address(u8 font);
-static void keyboard_clear();
 static u8 get_key_pressed();

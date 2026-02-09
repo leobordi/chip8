@@ -40,9 +40,18 @@ void display_update(display *dsp, u8 *keyboard) {
                 break;
             
             case SDL_KEYDOWN: {
-                    //printf( "Key pressed: %s - 0x%02X\n", SDL_GetKeyName(event.key.keysym.sym), event.key.keysym.scancode);
-                    u8 key_pressed = get_key(event.key.keysym.scancode);
-                    if (key_pressed <= 0xF) keyboard[key_pressed] = 1;
+                    u8 current_key = get_key(event.key.keysym.scancode);
+                    if (current_key <= 0xF) {
+                        keyboard[current_key] = 1;
+                    }
+                }
+                break;
+            
+            case SDL_KEYUP: {
+                    u8 current_key = get_key(event.key.keysym.scancode);
+                    if (current_key <= 0xF) {
+                        keyboard[current_key] = 0;
+                    }
                 }
                 break;
         }

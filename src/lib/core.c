@@ -19,8 +19,6 @@ void chip8_init() {
 
 void chip8_run() {
     while (true) {
-        keyboard_clear();
-        
         display_update(&ctx.disp, ctx.keyboard);
         
         if (!ctx.disp.running) {
@@ -293,7 +291,7 @@ static void execute() {
         case IN_FX0A:
             u8 key_pressed = get_key_pressed();
             if (key_pressed < 0x1F) ctx.regs[ctx.cur_inst.X] = key_pressed;
-            else ctx.pc -= 1;
+            else ctx.pc -= 2;
             break;
         
         case IN_FX15:
@@ -336,9 +334,7 @@ static void execute() {
             }
             break;
 
-        default:
-            printf("Istruzione  non implementata\n");
-            break;
+        default: break;
     }
 }
 
@@ -372,12 +368,6 @@ static u16 get_font_address(u8 font) {
         if (ctx.memory[i] = font) return i;
     }
     return 0x0000;
-}
-
-static void keyboard_clear() {
-    for (int i = 0; i < 16; i++) {
-        ctx.keyboard[i] = 0;
-    }
 }
 
 static u8 get_key_pressed() {
