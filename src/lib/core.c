@@ -7,6 +7,7 @@ void chip8_init() {
     load_font();
     display_init(&ctx.disp);
     audio_init(&ctx.audio);
+    keyboard_init(&ctx.keyboard);
     
     ctx.pc = FIRST_INST;
     ctx.sp = 0x0;
@@ -19,7 +20,7 @@ void chip8_init() {
 
 void chip8_run() {
     while (true) {
-        display_update(&ctx.disp, ctx.keyboard);
+        display_update(&ctx.disp, ctx.keyboard.buffer);
         
         if (!ctx.disp.running) {
             display_close(&ctx.disp);
@@ -277,21 +278,30 @@ static void execute() {
             break;
         
         case IN_EX9E:
-            if (ctx.keyboard[ctx.regs[ctx.cur_inst.X]]) ctx.pc += 2;
+            if (ctx.keyboard.buffer[ctx.regs[ctx.cur_inst.X]]) ctx.pc += 2;
             break;
         
         case IN_EXA1:
-            if (!ctx.keyboard[ctx.regs[ctx.cur_inst.X]]) ctx.pc += 2;
+            if (!ctx.keyboard.buffer[ctx.regs[ctx.cur_inst.X]]) ctx.pc += 2;
             break;
         
         case IN_FX07:
             ctx.regs[ctx.cur_inst.X] = ctx.delay_timer;
             break;
         
-        case IN_FX0A:
-            u8 key_pressed = get_key_pressed();
-            if (key_pressed < 0x1F) ctx.regs[ctx.cur_inst.X] = key_pressed;
-            else ctx.pc -= 2;
+        case IN_FX0A: {
+                u8 key_pressed = get_key_pressed(ctx.keyboard.buffer);
+
+                if (key_pressed < 0x1F && !ctx.keyboard.waiting_for_release) {
+                    ctx.keyboard.pressed_key = key_pressed;
+                    ctx.keyboard.waiting_for_release = true;
+                }else if (ctx.keyboard.waiting_for_release) {
+                    ctx.regs[ctx.cur_inst.X] = key_pressed;
+                    ctx.keyboard.waiting_for_release = false;
+                } else {
+                    ctx.pc -= 2;
+                }
+            }
             break;
         
         case IN_FX15:
@@ -370,13 +380,6 @@ static u16 get_font_address(u8 font) {
     return 0x0000;
 }
 
-static u8 get_key_pressed() {
-    for (u8 i = 0x0; i <= 0xF; i++) {
-        if (ctx.keyboard[i]) return i;
-    }
-    return 0x1F;
-}
-
 void update_timers() {
     u32 current_time = SDL_GetTicks();
     u32 elapsed_ms = current_time - last_timer_update;
@@ -386,9 +389,9 @@ void update_timers() {
         u32 ticks = elapsed_ms / 17;
         
         if (ctx.delay_timer > 0) 
-            (ctx.delay_timer > ticks) ? ctx.delay_timer - ticks : 0;
+            ctx.delay_timer = (ctx.delay_timer > ticks) ? ctx.delay_timer - ticks : 0;
         if (ctx.sound_timer > 0) 
-            (ctx.sound_timer > ticks) ? ctx.sound_timer - ticks : 0;
+            ctx.sound_timer = (ctx.sound_timer > ticks) ? ctx.sound_timer - ticks : 0;
 
         last_timer_update = current_time;
     }

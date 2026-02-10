@@ -77,25 +77,3 @@ void display_close(display *dsp) {
     }
     SDL_Quit();
 }
-
-static u8 get_key(SDL_Scancode scancode) {
-    switch (scancode) {
-        case 0x1E: return 0x1;
-        case 0x1F: return 0x2;
-        case 0x20: return 0x3;
-        case 0x21: return 0xC;
-        case 0x14: return 0x4;
-        case 0x1A: return 0x5;
-        case 0x08: return 0x6;
-        case 0x15: return 0xD;
-        case 0x04: return 0x7;
-        case 0x16: return 0x8;
-        case 0x07: return 0x9;
-        case 0x09: return 0xE;
-        case 0x1D: return 0xA;
-        case 0x1B: return 0x0;
-        case 0x06: return 0xB;
-        case 0x19: return 0xF;
-        default: return 0x1F;
-    }
-}

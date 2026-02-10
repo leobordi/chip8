@@ -3,6 +3,7 @@
 #include <common.h>
 #include <display.h>
 #include <audio.h>
+#include <keyboard.h>
 
 #define RAM_SIZE 4096
 #define FIRST_INST 0x200
@@ -63,7 +64,7 @@ typedef struct {
     u16 stack[16];
     u8 regs[16];
 
-    u8 keyboard[16];
+    keyboard keyboard;
     instruction cur_inst;
 
     u16 pc;
@@ -82,4 +83,3 @@ static void execute();
 static void load_font();
 static void update_timers();
 static u16 get_font_address(u8 font);
-static u8 get_key_pressed();
