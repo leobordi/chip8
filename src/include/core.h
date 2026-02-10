@@ -6,7 +6,7 @@
 #include <keyboard.h>
 
 #define RAM_SIZE 4096
-#define FIRST_INST 0x200
+#define FIRST_INST 0x200 
 
 typedef enum {
     IN_NONE,
@@ -81,5 +81,6 @@ bool chip8_load_rom(char *path);
 static void fetch();
 static void execute();
 static void load_font();
-static void update_timers();
+static void update_timers(u32 *last_timer_update);
 static u16 get_font_address(u8 font);
+u32 get_elapsed_ticks(u32 *last_timer_update, u32 refresh_rate);

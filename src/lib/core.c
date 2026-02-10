@@ -1,7 +1,6 @@
 #include <core.h>
 
 chip8 ctx;
-u32 last_timer_update;
 
 void chip8_init() {
     load_font();
@@ -14,11 +13,12 @@ void chip8_init() {
 
     ctx.delay_timer = 0;
     ctx.sound_timer = 0;
-    last_timer_update = SDL_GetTicks();
     ctx.audio.playing = false;
 }
 
 void chip8_run() {
+    u32 last_timer_update = SDL_GetTicks();
+    
     while (true) {
         display_update(&ctx.disp, ctx.keyboard.buffer);
         
@@ -30,13 +30,8 @@ void chip8_run() {
 
         fetch();
         execute();
-
-        update_timers();
-        if (ctx.sound_timer > 0 && !ctx.audio.playing) {
-            play_audio(&ctx.audio);
-        } else if (ctx.sound_timer == 0 && ctx.audio.playing) {
-            stop_audio(&ctx.audio);
-        }
+        
+        update_timers(&last_timer_update);
     }
 }
 
@@ -217,9 +212,11 @@ static void execute() {
             break;
 
         case IN_8XY6: {
-                u8 vy = ctx.regs[ctx.cur_inst.Y];
-                ctx.regs[ctx.cur_inst.X] = vy >> 1;
-                ctx.regs[0xF] = vy & 0x1;
+                // Per le rom più vecchie viene shiftato Vy
+                // u8 v = ctx.regs[ctx.cur_inst.Y];
+                u8 v = ctx.regs[ctx.cur_inst.X];
+                ctx.regs[ctx.cur_inst.X] = v >> 1;
+                ctx.regs[0xF] = v & 0x1;
             }
             break;
 
@@ -234,9 +231,11 @@ static void execute() {
             break;
 
         case IN_8XYE: {
-                u8 vy = ctx.regs[ctx.cur_inst.Y];
-                ctx.regs[ctx.cur_inst.X] = vy << 1;
-                ctx.regs[0xF] = (vy & 0x80) >> 7;
+                // Per le rom più vecchie viene shiftato Vy
+                // u8 v = ctx.regs[ctx.cur_inst.Y];
+                u8 v = ctx.regs[ctx.cur_inst.X];
+                ctx.regs[ctx.cur_inst.X] = v << 1;
+                ctx.regs[0xF] = (v & 0x80) >> 7;
             }
             break;
 
@@ -295,8 +294,9 @@ static void execute() {
                 if (key_pressed < 0x1F && !ctx.keyboard.waiting_for_release) {
                     ctx.keyboard.pressed_key = key_pressed;
                     ctx.keyboard.waiting_for_release = true;
-                }else if (ctx.keyboard.waiting_for_release) {
-                    ctx.regs[ctx.cur_inst.X] = key_pressed;
+                    ctx.pc -= 2;
+                } else if (ctx.keyboard.waiting_for_release) {
+                    ctx.regs[ctx.cur_inst.X] = ctx.keyboard.pressed_key;
                     ctx.keyboard.waiting_for_release = false;
                 } else {
                     ctx.pc -= 2;
@@ -317,7 +317,7 @@ static void execute() {
             break;
         
         case IN_FX29: {
-                u8 font = (ctx.regs[ctx.cur_inst.X] >> 4) & 0xF;
+                u8 font = ctx.regs[ctx.cur_inst.X] & 0xF;
                 ctx.ir = get_font_address(font);
             }
             break;
@@ -375,24 +375,33 @@ static void load_font() {
 
 static u16 get_font_address(u8 font) {
     for (u16 i = 0x0050; i < 0x00A0; i++) {
-        if (ctx.memory[i] = font) return i;
+        if (ctx.memory[i] == font) return i;
     }
     return 0x0000;
 }
 
-void update_timers() {
-    u32 current_time = SDL_GetTicks();
-    u32 elapsed_ms = current_time - last_timer_update;
+void update_timers(u32 *last_timer_update) {
+    u32 ticks = get_elapsed_ticks(last_timer_update, 60);
 
-    // 60 Hz vuol dire ogni 16,6667... ms (17 ms) 
-    if (elapsed_ms >= 17) {
-        u32 ticks = elapsed_ms / 17;
-        
+    if (ticks >= 1) {
         if (ctx.delay_timer > 0) 
             ctx.delay_timer = (ctx.delay_timer > ticks) ? ctx.delay_timer - ticks : 0;
         if (ctx.sound_timer > 0) 
             ctx.sound_timer = (ctx.sound_timer > ticks) ? ctx.sound_timer - ticks : 0;
-
-        last_timer_update = current_time;
     }
+
+    if (ctx.sound_timer > 0 && !ctx.audio.playing) {
+        play_audio(&ctx.audio);
+    } else if (ctx.sound_timer == 0 && ctx.audio.playing) {
+        stop_audio(&ctx.audio);
+    }
+}
+
+u32 get_elapsed_ticks(u32 *last_timer_update, u32 refresh_rate) {
+    u32 current_time = SDL_GetTicks();
+    u32 elapsed_ms = current_time - *last_timer_update;
+    
+    u32 ticks = elapsed_ms / (1000 / refresh_rate);
+    if (ticks >= 1) *last_timer_update = current_time;
+    return ticks;
 }
