@@ -23,8 +23,8 @@ void chip8_run() {
         display_update(&ctx.disp, ctx.keyboard.buffer);
         
         if (!ctx.disp.running) {
-            display_close(&ctx.disp);
             audio_close(&ctx.audio);
+            display_close(&ctx.disp);
             break;
         }
 
@@ -247,6 +247,16 @@ static void execute() {
             ctx.ir = ctx.cur_inst.NNN;
             break;
 
+        case IN_BNNN:
+            ctx.pc = ctx.cur_inst.NNN + ctx.regs[ctx.cur_inst.X];
+            break;
+
+        case IN_CXNN: {
+                u8 r = rand() % 255;
+                ctx.regs[ctx.cur_inst.X] = r & ctx.cur_inst.NN;
+            }
+            break;
+
         case IN_DXYN: {
                 ctx.regs[0xF] = 0;
                 u8 start_x = ctx.regs[ctx.cur_inst.X] % D_WIDTH;
@@ -319,6 +329,7 @@ static void execute() {
         case IN_FX29: {
                 u8 font = ctx.regs[ctx.cur_inst.X] & 0xF;
                 ctx.ir = get_font_address(font);
+                //ctx.ir = 0x50 + (font * 5);
             }
             break;
         

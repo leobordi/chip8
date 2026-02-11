@@ -73,6 +73,7 @@ void display_draw(display *dsp) {
 
 void display_close(display *dsp) {
     if (dsp->window != NULL) {
+        SDL_DestroyRenderer(dsp->renderer);
         SDL_DestroyWindow(dsp->window);
     }
     SDL_Quit();

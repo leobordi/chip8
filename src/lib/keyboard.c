@@ -1,6 +1,10 @@
 #include <keyboard.h>
 
 void keyboard_init(keyboard *kb) {
+    for (int i = 0; i < sizeof(kb->buffer); i++) {
+        kb->buffer[i] = 0;
+    }
+
     kb->pressed_key = 0x1F;
     kb->waiting_for_release = false;
 }
