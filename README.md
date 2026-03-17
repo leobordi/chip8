@@ -1,6 +1,6 @@
 # CHIP 8 EMULATOR 🚀
 
-A minimal CHIP-8 emulator written in C, using SDL2 for display, input, and audio. The goal is a small, readable codebase you can extend with compatibility options and improvements.
+A minimal CHIP-8 emulator written in C, using SDL2 for display, input, and audio.
 
 ## Features
 
