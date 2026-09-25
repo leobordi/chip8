@@ -38,3 +38,4 @@ CHIP-8:  1 2 3 C      Keyboard: 1 2 3 4
 
 - This is a minimal implementation intended for learning and experimentation.
 - Some CHIP-8 variants and edge cases may not be fully supported yet.
+- This project was created entirely by hand, using the LLM only as a teacher.
